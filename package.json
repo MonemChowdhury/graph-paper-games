@@ -1,0 +1,21 @@
+{
+  "name": "graph-paper-games",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tic-Tac-Toe, Four in a Row and Dots & Boxes on graph paper. Play the computer, a friend on the same phone, or a friend online.",
+  "scripts": {
+    "sync": "npx cap sync android",
+    "open": "npx cap open android",
+    "icons": "npx @capacitor/assets generate --android"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/app": "^8.0.0",
+    "@capacitor/core": "8.5.3",
+    "@capacitor/share": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.3",
+    "@capacitor/assets": "^3.0.5"
+  }
+}

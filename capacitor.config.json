@@ -1,0 +1,8 @@
+{
+  "appId": "com.monemshariar.graphpapergames",
+  "appName": "Graph Paper Games",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#f2f6f9"
+  }
+}

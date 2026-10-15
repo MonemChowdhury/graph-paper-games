@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#f2f6f9">
+<title>Graph Paper Games</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- HOME -->
+<section class="screen" id="home">
+  <header class="top">
+    <h1 class="logo">Graph Paper<br>Games</h1>
+    <p class="tag">Three pen-and-paper classics. Play the computer, a friend on this phone, or a friend anywhere.</p>
+  </header>
+  <div class="cards" id="gameCards"></div>
+  <p class="foot">No accounts. No ads. No tracking.</p>
+</section>
+
+<!-- MODE PICKER -->
+<section class="screen" id="modes" hidden>
+  <nav class="bar"><button class="back" data-back>‹ Back</button></nav>
+  <h2 class="title" id="modeTitle"></h2>
+  <p class="tag" id="modeRules"></p>
+  <div class="stack">
+    <p class="label">Play the computer</p>
+    <div class="row2">
+      <button class="btn" id="cpuEasy">Easy</button>
+      <button class="btn" id="cpuHard">Hard</button>
+    </div>
+    <p class="label">Two players</p>
+    <button class="btn" id="local2">Same phone</button>
+    <p class="label">Online with a friend</p>
+    <div class="row2">
+      <button class="btn primary" id="hostBtn">Create game</button>
+      <button class="btn" id="joinBtn">Join with code</button>
+    </div>
+  </div>
+</section>
+
+<!-- JOIN -->
+<section class="screen" id="join" hidden>
+  <nav class="bar"><button class="back" data-back>‹ Back</button></nav>
+  <h2 class="title">Join a game</h2>
+  <p class="tag">Ask your friend for the 5-letter code on their screen.</p>
+  <form id="joinForm" class="stack" autocomplete="off">
+    <input id="codeInput" class="code-input" maxlength="5" inputmode="text" autocapitalize="characters" spellcheck="false" placeholder="ABCDE" aria-label="Game code">
+    <button class="btn primary" type="submit">Join</button>
+    <p class="err" id="joinErr" role="alert"></p>
+  </form>
+</section>
+
+<!-- WAITING ROOM -->
+<section class="screen" id="wait" hidden>
+  <nav class="bar"><button class="back" data-back>‹ Cancel</button></nav>
+  <h2 class="title">Your game code</h2>
+  <p class="tag" id="waitMsg">Getting a code…</p>
+  <div class="code-show" id="codeShow" aria-live="polite">· · · · ·</div>
+  <button class="btn" id="copyCode" disabled>Copy invite</button>
+  <p class="tag small">Your friend opens Graph Paper Games, taps the same game, then <b>Join with code</b>. Keep this screen open until they arrive.</p>
+</section>
+
+<!-- PLAY -->
+<section class="screen" id="play" hidden>
+  <nav class="bar">
+    <button class="back" data-back>‹ Menu</button>
+    <span class="pill" id="netPill" hidden></span>
+  </nav>
+  <div class="players">
+    <div class="pl" id="pl0"><span class="dot p0"></span><span class="nm" id="nm0"></span><b class="sc" id="sc0">0</b></div>
+    <div class="pl" id="pl1"><span class="dot p1"></span><span class="nm" id="nm1"></span><b class="sc" id="sc1">0</b></div>
+  </div>
+  <p class="status" id="status" aria-live="polite"></p>
+  <div class="boardwrap"><div id="board"></div></div>
+  <div class="row2 end">
+    <button class="btn primary" id="rematch" disabled>Play again</button>
+  </div>
+  <p class="tag small center" id="roundInfo"></p>
+</section>
+
+<script src="vendor/peerjs.min.js"></script>
+<script src="games.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
