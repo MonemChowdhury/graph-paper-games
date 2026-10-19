@@ -156,3 +156,15 @@ Done. Your app goes live after the final review.
 - **Rules check**: Google's requirements change from time to time. If a
   Play Console screen looks different from this guide, follow what Play
   Console says.
+
+---
+
+## TO DO before the public (production) release
+
+- [ ] **Invite link that works without the app.** Publish a web version of the
+      games on GitHub Pages (monemchowdhury.github.io/graph-paper-games/#CODE)
+      so a friend can join from the invite link in their browser, with a
+      "Get the app" button after the game.
+- [ ] **Add the Play Store link to the invite message**
+      (play.google.com/store/apps/details?id=com.monemshariar.graphpapergames).
+- [ ] Bump versionCode to 2 and upload the new build to closed testing first.
