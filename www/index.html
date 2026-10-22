@@ -12,11 +12,12 @@
 <!-- HOME -->
 <section class="screen" id="home">
   <header class="top">
+    <button class="snd" type="button"></button>
     <h1 class="logo">Graph Paper<br>Games</h1>
     <p class="tag">Three pen-and-paper classics. Play the computer, a friend on this phone, or a friend anywhere.</p>
   </header>
   <div class="cards" id="gameCards"></div>
-  <p class="foot">No accounts. No ads. No tracking.</p>
+  <p class="foot">No accounts. No ads. No tracking.<br><a href="https://monemchowdhury.github.io/graph-paper-games/store/privacy-policy.html" target="_blank" rel="noopener">Privacy policy</a></p>
 </section>
 
 <!-- MODE PICKER -->
@@ -67,6 +68,7 @@
   <nav class="bar">
     <button class="back" data-back>‹ Menu</button>
     <span class="pill" id="netPill" hidden></span>
+    <button class="snd" type="button"></button>
   </nav>
   <div class="players">
     <div class="pl" id="pl0"><span class="dot p0"></span><span class="nm" id="nm0"></span><b class="sc" id="sc0">0</b></div>
@@ -81,6 +83,7 @@
 </section>
 
 <script src="vendor/peerjs.min.js"></script>
+<script src="sound.js"></script>
 <script src="games.js"></script>
 <script src="app.js"></script>
 </body>

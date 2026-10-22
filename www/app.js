@@ -69,9 +69,11 @@ function onMove(m){
   if(!canPlay()||!M.game.legal(M.s,m))return;
   M.game.apply(M.s,m);
   if(M.mode==='online')net.send({t:'move',r:M.round,m});
-  buzz();update();
+  moved();update();
 }
 function buzz(){try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}}
+/* pencil scratch + buzz for every move: yours, the computer's or your friend's */
+function moved(){try{window.Sound&&Sound.scratch(M.game.id)}catch(e){}buzz()}
 function update(){
   const {game,s}=M,res=game.result(s);
   if(res&&!M.counted){M.counted=true;if(res.winner==='D')M.wins[2]++;else M.wins[res.winner]++}
@@ -105,7 +107,7 @@ function update(){
     aiTimer=setTimeout(()=>{
       if(!M||M.mode!=='cpu'||M.game.result(M.s)||M.s.turn===M.me)return;
       const m=M.game.ai(M.s,M.level);
-      if(M.game.legal(M.s,m)){M.game.apply(M.s,m);update()}
+      if(M.game.legal(M.s,m)){M.game.apply(M.s,m);moved();update()}
     },game.id==='c4'&&M.level==='hard'?250:450);
   }
 }
@@ -113,6 +115,23 @@ $('rematch').onclick=()=>{
   const r=M.round+1;newRound(r);
   if(M.mode==='online')net.send({t:'rematch',r});
 };
+
+/* ---------- sound on/off ---------- */
+const SPK='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/>';
+function paintSound(){
+  const on=!window.Sound||Sound.isOn();
+  document.querySelectorAll('.snd').forEach(b=>{
+    b.innerHTML=SPK+(on?'<path d="M16 9c1.5 1.5 1.5 4.5 0 6M18.5 6.5c3 3 3 8 0 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+                      :'<path d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>');
+    b.setAttribute('aria-label',on?'Sound on. Tap to mute':'Sound off. Tap to turn on');
+    b.setAttribute('aria-pressed',on?'false':'true');
+  });
+}
+document.querySelectorAll('.snd').forEach(b=>b.onclick=()=>{
+  if(!window.Sound)return;Sound.set(!Sound.isOn());paintSound();
+  if(Sound.isOn())Sound.scratch(M?M.game.id:'dab');
+});
+paintSound();
 
 /* ---------- mode buttons ---------- */
 // Blue (you) moves first in round 1; each "Play again" swaps who starts.
@@ -151,7 +170,7 @@ function wire(conn,role){
     if(msg.t==='full'){$('joinErr').textContent='That game already has two players.';return}
     if(!M||M.mode!=='online')return;
     if(msg.t==='move'&&msg.r===M.round&&M.s.turn!==M.me&&M.game.legal(M.s,msg.m)){
-      M.game.apply(M.s,msg.m);buzz();update();
+      M.game.apply(M.s,msg.m);moved();update();
     }
     if(msg.t==='rematch'&&Number.isInteger(msg.r)&&msg.r>M.round)newRound(msg.r);
   });
