@@ -16,8 +16,12 @@ function init(){
   const AC=window.AudioContext||window.webkitAudioContext;
   if(!AC)return false;
   ctx=new AC();
-  loading=fetch(DATA).then(r=>r.arrayBuffer())
-    .then(a=>new Promise((ok,no)=>ctx.decodeAudioData(a,ok,no)))
+  // decode the embedded sound directly (no fetch, so nothing can block it)
+  loading=Promise.resolve().then(()=>{
+      const bin=atob(DATA.slice(DATA.indexOf(',')+1)),a=new Uint8Array(bin.length);
+      for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);
+      return new Promise((ok,no)=>ctx.decodeAudioData(a.buffer,ok,no));
+    })
     .then(b=>{buf=b}).catch(()=>{});
   return true;
 }
