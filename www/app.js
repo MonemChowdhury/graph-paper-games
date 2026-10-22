@@ -73,7 +73,12 @@ function onMove(m){
 }
 function buzz(){try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}}
 /* pencil scratch + buzz for every move: yours, the computer's or your friend's */
-function moved(){try{window.Sound&&Sound.scratch(M.game.id)}catch(e){}buzz()}
+function moved(){
+  // in Tic-Tac-Toe the player who just moved is the one whose turn it no longer is; blue plays X
+  const mark=M.game.id==='ttt'?(M.s.turn===1?'x':'o'):'';
+  try{window.Sound&&Sound.scratch(M.game.id,mark)}catch(e){}
+  buzz();
+}
 function update(){
   const {game,s}=M,res=game.result(s);
   if(res&&!M.counted){M.counted=true;if(res.winner==='D')M.wins[2]++;else M.wins[res.winner]++}
@@ -129,7 +134,7 @@ function paintSound(){
 }
 document.querySelectorAll('.snd').forEach(b=>b.onclick=()=>{
   if(!window.Sound)return;Sound.set(!Sound.isOn());paintSound();
-  if(Sound.isOn())Sound.scratch(M?M.game.id:'dab');
+  if(Sound.isOn())Sound.scratch('dab');
 });
 paintSound();
 
