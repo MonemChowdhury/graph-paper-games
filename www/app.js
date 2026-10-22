@@ -74,9 +74,11 @@ function onMove(m){
 function buzz(){try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}}
 /* pencil scratch + buzz for every move: yours, the computer's or your friend's */
 function moved(){
-  // in Tic-Tac-Toe the player who just moved is the one whose turn it no longer is; blue plays X
-  const mark=M.game.id==='ttt'?(M.s.turn===1?'x':'o'):'';
-  try{window.Sound&&Sound.scratch(M.game.id,mark)}catch(e){}
+  const g=M.game.id,s=M.s;
+  const info=g==='ttt'?(s.turn===1?'x':'o')                 // X or O just drawn
+            :g==='c4'?(s.last>=35?'base':'disc')             // bottom row lands on the base, else on a disc
+            :M.game.freshBoxes(s).length;                    // Dots & Boxes: boxes just claimed
+  try{window.Sound&&Sound.scratch(g,info)}catch(e){}
   buzz();
 }
 function update(){

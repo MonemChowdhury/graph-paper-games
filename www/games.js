@@ -160,6 +160,7 @@ const DotsAndBoxes={
     return{winner:a===b?'D':(a>b?0:1),cells:[]};
   },
   score:s=>[s.box.filter(v=>v===0).length,s.box.filter(v=>v===1).length],
+  freshBoxes:s=>s.last<0?[]:EDGE_BOXES[s.last].filter(bx=>s.box[bx]>=0),
   ai(s,level){
     const free=dabFree(s);
     const take=free.filter(m=>completes(s,m));
@@ -178,11 +179,12 @@ const DotsAndBoxes={
   render(el,s,ctx){
     const G=70,M=22,W=M*2+G*N;
     let h=`<svg class="dab" viewBox="0 0 ${W} ${W}" role="group" aria-label="Dots and boxes board">`;
-    s.box.forEach((v,bx)=>{const r=Math.floor(bx/N),c=bx%N,x=M+c*G,y=M+r*G;
-      h+=`<rect class="box${v>=0?' '+P[v]:''}" x="${x+4}" y="${y+4}" width="${G-8}" height="${G-8}" rx="4"/>`;
-      if(v>=0)h+=`<text class="boxmark" x="${x+G/2}" y="${y+G/2}" fill="var(--${P[v]})">${v?'R':'B'}</text>`});
+    const fb=DotsAndBoxes.freshBoxes(s);
+    s.box.forEach((v,bx)=>{const r=Math.floor(bx/N),c=bx%N,x=M+c*G,y=M+r*G,f=fb.includes(bx)?' fresh':'';
+      h+=`<rect class="box${v>=0?' '+P[v]:''}${f}" x="${x+4}" y="${y+4}" width="${G-8}" height="${G-8}" rx="4"/>`;
+      if(v>=0)h+=`<text class="boxmark${f}" x="${x+G/2}" y="${y+G/2}" fill="var(--${P[v]})">${v?'R':'B'}</text>`});
     const line=(i,x1,y1,x2,y2)=>{const v=s.e[i],can=ctx.canPlay&&v<0;
-      h+=`<line class="edge${v>=0?' '+P[v]:''}${i===s.last?' fresh':''}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+      h+=`<line class="edge${v>=0?' '+P[v]:''}${i===s.last?' fresh':''}"${i===s.last?' pathLength="1"':''} x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
       if(can)h+=`<line class="hit" data-m="${i}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" tabindex="0" role="button" aria-label="Line ${i+1}"/>`};
     for(let r=0;r<=N;r++)for(let c=0;c<N;c++)line(hIdx(r,c),M+c*G+8,M+r*G,M+(c+1)*G-8,M+r*G);
     for(let r=0;r<N;r++)for(let c=0;c<=N;c++)line(vIdx(r,c),M+c*G,M+r*G+8,M+c*G,M+(r+1)*G-8);

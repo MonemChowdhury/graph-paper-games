@@ -114,11 +114,16 @@ body{
 .dab .edge{stroke:var(--line);stroke-width:3;stroke-dasharray:2 7;stroke-linecap:round}
 .dab .edge.p0{stroke:var(--p0);stroke-width:7;stroke-dasharray:none}
 .dab .edge.p1{stroke:var(--p1);stroke-width:7;stroke-dasharray:none}
-.dab .edge.fresh{animation:pop .3s ease-out}
+/* a new line is drawn dot to dot like one pencil stroke; a claimed box is shaded in, then initialled */
+.dab .edge.fresh{stroke-dasharray:1;stroke-dashoffset:1;animation:draw .22s ease-out forwards}
+.dab .box.fresh{clip-path:inset(0 100% 0 0);animation:shade .3s linear .22s forwards}
+.dab .boxmark.fresh{opacity:0;transform-box:fill-box;transform-origin:center;animation:mark .2s ease-out .5s forwards}
+@keyframes shade{to{clip-path:inset(0 0 0 0)}}
+@keyframes mark{from{opacity:0;transform:scale(1.4)}to{opacity:1;transform:none}}
 .dab .box.p0{fill:color-mix(in srgb,var(--p0) 22%,transparent)}
 .dab .box.p1{fill:color-mix(in srgb,var(--p1) 22%,transparent)}
 .dab .box{fill:transparent}
 .dab .boxmark{font-family:var(--hand);font-weight:700;font-size:30px;text-anchor:middle;dominant-baseline:central}
 .dab .dotpt{fill:var(--ink)}
 @keyframes pop{from{opacity:.2}to{opacity:1}}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.fresh .ink{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.fresh .ink,.dab .edge.fresh{stroke-dashoffset:0}.dab .box.fresh{clip-path:none}.dab .boxmark.fresh{opacity:1}}
