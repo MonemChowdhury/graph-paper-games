@@ -41,6 +41,19 @@ function play(b,seg,at,rate,vol){
   src.connect(g);g.connect(ctx.destination);
   src.start(at,seg[0],seg[1]/rate);
 }
+/* A soft marimba-like note made in code: a warm tone plus a faint wooden overtone, quick fade. */
+function note(freq,at){
+  const out=ctx.createGain();out.connect(ctx.destination);
+  out.gain.setValueAtTime(0,at);
+  out.gain.linearRampToValueAtTime(.2,at+.006);
+  out.gain.exponentialRampToValueAtTime(.001,at+.45);
+  [[1,1],[3.9,.12]].forEach(([m,v])=>{
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.type='sine';o.frequency.value=freq*m;g.gain.value=v;
+    if(m>1){g.gain.setValueAtTime(v,at);g.gain.exponentialRampToValueAtTime(.001,at+.08)}
+    o.connect(g);g.connect(out);o.start(at);o.stop(at+.5);
+  });
+}
 const last={};
 function one(name,list,b,at,rate=1,vol=1){
   let i;do{i=Math.floor(Math.random()*list.length)}while(list.length>1&&i===last[name]);
@@ -62,8 +75,9 @@ function scratch(style,info){
     }else{
       // Dots & Boxes has many moves, so its sounds stay soft and calm
       one('s',SHORT,buf,t,1,.55);                                     // line: one light pencil stroke
-      const n=Math.min(+info||0,2);                                   // box claimed: one smooth shading stroke
-      for(let k=0;k<n;k++)one('l',LONG,buf,t+.22+k*.18,.88,.6);
+      const n=Math.min(+info||0,2);                                   // box claimed: soft wooden note(s)
+      if(n>=1)note(659,t+.22);                                        // one box: E
+      if(n>=2)note(988,t+.36);                                        // two boxes: E then B, rising
     }
   };
   (buf&&drops)?go():loading&&loading.then(go);
