@@ -60,9 +60,10 @@ function scratch(style,info){
     }else if(style==='c4'){
       one(info==='base'?'b':'d',info==='base'?BASE:DISC,drops,t);     // disc slides in and clacks down
     }else{
-      one('s',SHORT,buf,t,1.15);                                      // line: one quick straight stroke
-      const n=Math.min(+info||0,2)*4;                                 // box claimed: scribble it in
-      for(let k=0;k<n;k++)one('s',SHORT,buf,t+.22+k*.075,1.35,.75);
+      // Dots & Boxes has many moves, so its sounds stay soft and calm
+      one('s',SHORT,buf,t,1,.55);                                     // line: one light pencil stroke
+      const n=Math.min(+info||0,2);                                   // box claimed: one smooth shading stroke
+      for(let k=0;k<n;k++)one('l',LONG,buf,t+.22+k*.18,.88,.6);
     }
   };
   (buf&&drops)?go():loading&&loading.then(go);
