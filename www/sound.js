@@ -44,19 +44,32 @@ function play(b,seg,at,rate,vol){
   src.connect(g);g.connect(bus);
   src.start(at,seg[0],seg[1]/rate);
 }
-/* A soft paper pop made in code: a gentle low thump with a short papery puff on top. */
-function pop(at,lift){
-  const th=ctx.createOscillator(),tg=ctx.createGain();
-  th.type='sine';
-  th.frequency.setValueAtTime(190*lift,at);th.frequency.exponentialRampToValueAtTime(95*lift,at+.06);
-  tg.gain.setValueAtTime(0,at);tg.gain.linearRampToValueAtTime(.55,at+.004);tg.gain.exponentialRampToValueAtTime(.001,at+.12);
-  th.connect(tg);tg.connect(bus);th.start(at);th.stop(at+.14);
-  const n=Math.floor(ctx.sampleRate*.05),nb=ctx.createBuffer(1,n,ctx.sampleRate),d=nb.getChannelData(0);
-  for(let k=0;k<n;k++)d[k]=(Math.random()*2-1)*Math.pow(1-k/n,3);
-  const src=ctx.createBufferSource(),bp=ctx.createBiquadFilter(),ng=ctx.createGain();
-  src.buffer=nb;bp.type='bandpass';bp.frequency.value=1100*lift;bp.Q.value=.8;ng.gain.value=.35;
-  src.connect(bp);bp.connect(ng);ng.connect(bus);src.start(at);
+/* Box-claim sounds, all made in code and played through the same warm, soft output. */
+function tone(type,f0,f1,at,peak,dur,glide){
+  const o=ctx.createOscillator(),g=ctx.createGain();o.type=type;
+  o.frequency.setValueAtTime(f0,at);if(f1)o.frequency.exponentialRampToValueAtTime(f1,at+(glide||dur*.5));
+  g.gain.setValueAtTime(0,at);g.gain.linearRampToValueAtTime(peak,at+.005);g.gain.exponentialRampToValueAtTime(.001,at+dur);
+  o.connect(g);g.connect(bus);o.start(at);o.stop(at+dur+.02);
 }
+function puff(at,freq,q,peak,dur,type){
+  const n=Math.floor(ctx.sampleRate*dur),nb=ctx.createBuffer(1,n,ctx.sampleRate),d=nb.getChannelData(0);
+  for(let k=0;k<n;k++)d[k]=(Math.random()*2-1)*Math.pow(1-k/n,3);
+  const src=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();
+  src.buffer=nb;f.type=type||'bandpass';f.frequency.value=freq;f.Q.value=q;g.gain.value=peak;
+  src.connect(f);f.connect(g);g.connect(bus);src.start(at);
+}
+const CLAIMS={
+  // a quick pencil tick mark, like ticking off the box
+  tick:(at,k)=>{one('s',SHORT,buf,at,1.1,.55);one('s',SHORT,buf,at+.08,.92,.6)},
+  // a small wooden game piece set down on the table
+  wood:(at,k)=>{tone('sine',560*k,500*k,at,.5,.09,.015);tone('triangle',1350*k,0,at,.12,.03)},
+  // a low, soft bell
+  bell:(at,k)=>{const f=k>1?659:523;tone('sine',f,0,at,.16,.8);tone('sine',f*2,0,at,.05,.5);tone('sine',f*3,0,at,.02,.3)},
+  // a rubber stamp pressed onto the page
+  stamp:(at,k)=>{tone('sine',130*k,70*k,at,.75,.12,.05);puff(at,700,.7,.5,.07,'lowpass')}
+};
+let claimStyle='tick';
+try{const c=localStorage.getItem('gpg-box');if(c&&CLAIMS[c])claimStyle=c}catch(e){}
 const last={};
 function one(name,list,b,at,rate=1,vol=1){
   let i;do{i=Math.floor(Math.random()*list.length)}while(list.length>1&&i===last[name]);
@@ -78,9 +91,9 @@ function scratch(style,info){
     }else{
       // Dots & Boxes has many moves, so its sounds stay soft and calm
       one('s',SHORT,buf,t,1,.55);                                     // line: one light pencil stroke
-      const n=Math.min(+info||0,2);                                   // box claimed: soft paper pop
-      if(n>=1)pop(t+.22,1);
-      if(n>=2)pop(t+.36,1.2);                                         // two boxes: a second, slightly higher pop
+      const n=Math.min(+info||0,2),c=CLAIMS[claimStyle];               // box claimed
+      if(n>=1)c(t+.22,1);
+      if(n>=2)c(t+.22+(claimStyle==='tick'?.3:.16),1.2);              // two boxes: a second, slightly higher one
     }
   };
   (buf&&drops)?go():loading&&loading.then(go);
@@ -89,6 +102,9 @@ function scratch(style,info){
 window.Sound={
   scratch,
   isOn:()=>on,
+  claimStyles:()=>Object.keys(CLAIMS),
+  claim:()=>claimStyle,
+  setClaim(v){if(!CLAIMS[v])return;claimStyle=v;try{localStorage.setItem('gpg-box',v)}catch(e){}},
   set(v){on=!!v;try{localStorage.setItem(KEY,on?'on':'off')}catch(e){}}
 };
 })();

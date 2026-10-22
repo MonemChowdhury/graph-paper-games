@@ -82,6 +82,17 @@
   <p class="tag small center" id="roundInfo"></p>
 </section>
 
+<!-- SOUND SETTINGS -->
+<div class="sheet-bg" id="soundSheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <h2 class="title" id="sheetTitle">Sound</h2>
+    <label class="switch-row" for="sndOn"><span>Sound effects</span><input type="checkbox" id="sndOn"><span class="switch" aria-hidden="true"></span></label>
+    <p class="label">Box sound <span class="hint">Dots &amp; Boxes</span></p>
+    <div class="choices" id="boxChoices" role="radiogroup" aria-label="Box sound"></div>
+    <button class="btn primary" id="sheetDone" type="button">Done</button>
+  </div>
+</div>
+
 <script src="vendor/peerjs.min.js"></script>
 <script src="sound.js"></script>
 <script src="games.js"></script>

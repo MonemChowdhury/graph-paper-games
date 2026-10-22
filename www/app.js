@@ -14,6 +14,7 @@ function show(id){
   screen=id;window.scrollTo(0,0);
 }
 function goBack(){
+  if(!$('soundSheet').hidden){closeSheet();return}
   if(screen==='play'||screen==='wait'){leaveOnline();show(screen==='play'?'home':'modes');return}
   if(screen==='join'){show('modes');return}
   if(screen==='modes'){show('home');return}
@@ -23,7 +24,7 @@ document.querySelectorAll('[data-back]').forEach(b=>b.onclick=goBack);
 /* Android hardware back button (Capacitor App plugin, when running as an app) */
 try{
   const App=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;
-  if(App)App.addListener('backButton',()=>{if(screen==='home')App.exitApp();else goBack()});
+  if(App)App.addListener('backButton',()=>{if(screen==='home'&&$('soundSheet').hidden)App.exitApp();else goBack()});
 }catch(e){}
 
 /* ---------- home ---------- */
@@ -130,14 +131,26 @@ function paintSound(){
   document.querySelectorAll('.snd').forEach(b=>{
     b.innerHTML=SPK+(on?'<path d="M16 9c1.5 1.5 1.5 4.5 0 6M18.5 6.5c3 3 3 8 0 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
                       :'<path d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>');
-    b.setAttribute('aria-label',on?'Sound on. Tap to mute':'Sound off. Tap to turn on');
-    b.setAttribute('aria-pressed',on?'false':'true');
+    b.setAttribute('aria-label',on?'Sound settings (sound on)':'Sound settings (sound off)');
   });
 }
-document.querySelectorAll('.snd').forEach(b=>b.onclick=()=>{
-  if(!window.Sound)return;Sound.set(!Sound.isOn());paintSound();
-  if(Sound.isOn())Sound.scratch('dab');
-});
+/* speaker icon opens the Sound panel: on/off and the Dots & Boxes box sound */
+const BOX_SOUNDS=[['tick','Pencil tick','A quick tick mark'],['wood','Wooden piece','A game piece set down'],
+                  ['bell','Soft bell','A low, gentle bell'],['stamp','Stamp','A stamp on the page']];
+function paintSheet(){
+  const has=!!window.Sound;
+  $('sndOn').checked=!has||Sound.isOn();
+  const cur=has?Sound.claim():'tick',off=has&&!Sound.isOn();
+  $('boxChoices').innerHTML=BOX_SOUNDS.map(([k,n,d])=>
+    `<button type="button" class="choice${k===cur?' on':''}" role="radio" aria-checked="${k===cur}" data-k="${k}" ${off?'disabled':''}><b>${n}</b><span>${d}</span></button>`).join('');
+  $('boxChoices').querySelectorAll('.choice').forEach(b=>b.onclick=()=>{Sound.setClaim(b.dataset.k);paintSheet();Sound.scratch('dab',1)});
+}
+function openSheet(){paintSheet();$('soundSheet').hidden=false;$('sheetDone').focus()}
+function closeSheet(){$('soundSheet').hidden=true}
+document.querySelectorAll('.snd').forEach(b=>b.onclick=openSheet);
+$('sheetDone').onclick=closeSheet;
+$('soundSheet').onclick=e=>{if(e.target.id==='soundSheet')closeSheet()};
+$('sndOn').onchange=()=>{if(!window.Sound)return;Sound.set($('sndOn').checked);paintSound();paintSheet();if(Sound.isOn())Sound.scratch('ttt','x')};
 paintSound();
 
 /* ---------- mode buttons ---------- */
