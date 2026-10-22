@@ -179,10 +179,10 @@ const DotsAndBoxes={
   render(el,s,ctx){
     const G=70,M=22,W=M*2+G*N;
     let h=`<svg class="dab" viewBox="0 0 ${W} ${W}" role="group" aria-label="Dots and boxes board">`;
-    const fb=DotsAndBoxes.freshBoxes(s);
+    const fb=DotsAndBoxes.freshBoxes(s),mk=ctx.marks||['B','R'];
     s.box.forEach((v,bx)=>{const r=Math.floor(bx/N),c=bx%N,x=M+c*G,y=M+r*G,f=fb.includes(bx)?' fresh':'';
       h+=`<rect class="box${v>=0?' '+P[v]:''}${f}" x="${x+4}" y="${y+4}" width="${G-8}" height="${G-8}" rx="4"/>`;
-      if(v>=0)h+=`<text class="boxmark${f}" x="${x+G/2}" y="${y+G/2}" fill="var(--${P[v]})">${v?'R':'B'}</text>`});
+      if(v>=0)h+=`<text class="boxmark${f}${mk[v].length>1?' two':''}" x="${x+G/2}" y="${y+G/2}" fill="var(--${P[v]})">${esc(mk[v])}</text>`});
     const line=(i,x1,y1,x2,y2)=>{const v=s.e[i],can=ctx.canPlay&&v<0;
       h+=`<line class="edge${v>=0?' '+P[v]:''}${i===s.last?' fresh':''}"${i===s.last?' pathLength="1"':''} x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
       if(can)h+=`<line class="hit" data-m="${i}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" tabindex="0" role="button" aria-label="Line ${i+1}"/>`};
@@ -197,6 +197,7 @@ const DotsAndBoxes={
   }
 };
 
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const GAMES={ttt:TicTacToe,c4:FourInARow,dab:DotsAndBoxes};
 root.GAMES=GAMES;
 if(typeof module!=='undefined')module.exports=GAMES;

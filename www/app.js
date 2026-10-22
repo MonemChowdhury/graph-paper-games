@@ -42,6 +42,30 @@ document.querySelectorAll('.card').forEach(c=>c.onclick=()=>{
   $('modeTitle').textContent=g.name;$('modeRules').textContent=g.rules;show('modes');
 });
 
+/* ---------- player names (remembered on this phone) ---------- */
+const NAME_KEY='gpg-names';
+try{const n=JSON.parse(localStorage.getItem(NAME_KEY)||'[]');if(n[0])$('name0').value=n[0];if(n[1])$('name1').value=n[1]}catch(e){}
+['name0','name1'].forEach(id=>{
+  $(id).addEventListener('input',()=>{try{localStorage.setItem(NAME_KEY,JSON.stringify([$('name0').value.trim(),$('name1').value.trim()]))}catch(e){}});
+  $(id).addEventListener('keydown',e=>{if(e.key==='Enter')e.target.blur()});
+});
+function playerNames(){return[$('name0').value.trim()||'Blue',$('name1').value.trim()||'Red']}
+// letters split by what a reader sees as one character (works for names in any script)
+function chars(t){
+  try{if(window.Intl&&Intl.Segmenter)return[...new Intl.Segmenter(undefined,{granularity:'grapheme'}).segment(t)].map(x=>x.segment)}catch(e){}
+  return Array.from(t);
+}
+/* Letter written in a claimed box: the first letter of each name, or two letters if both start the same */
+function boxMarks(names){
+  const a=chars(names[0]),b=chars(names[1]),up=x=>x.toLocaleUpperCase();
+  let m0=up(a[0]||'B'),m1=up(b[0]||'R');
+  if(m0===m1){
+    m0=up(a[0]||'')+(a[1]||'');m1=up(b[0]||'')+(b[1]||'');
+    if(m0===m1){m0+='1';m1+='2'}
+  }
+  return[m0,m1];
+}
+
 /* ---------- match state ---------- */
 let M=null; // {game, mode, level, me, names, round, first, s, wins:[p0,p1,draws], counted}
 let aiTimer=null;
@@ -50,7 +74,10 @@ function startMatch(gameId,mode,opts){
   const game=GAMES[gameId];
   M={game,mode,level:opts.level||'hard',me:opts.me??0,round:opts.round||1,first:opts.first??0,
      wins:opts.wins||[0,0,0],counted:false};
-  M.names=mode==='local'?['Blue','Red']:mode==='cpu'?['You','Computer']:(M.me===0?['You','Friend']:['Friend','You']);
+  const [n0,n1]=playerNames();
+  M.names=mode==='local'?[n0,n1]:mode==='cpu'?[$('name0').value.trim()||'You','Computer']
+         :(()=>{const me=$('name0').value.trim()||'You';return M.me===0?[me,'Friend']:['Friend',me]})();
+  M.marks=boxMarks(M.names);
   M.s=game.init(M.first);
   show('play');update();
 }
@@ -85,7 +112,7 @@ function moved(){
 function update(){
   const {game,s}=M,res=game.result(s);
   if(res&&!M.counted){M.counted=true;if(res.winner==='D')M.wins[2]++;else M.wins[res.winner]++}
-  game.render($('board'),s,{canPlay:canPlay(),onMove});
+  game.render($('board'),s,{canPlay:canPlay(),onMove,marks:M.marks});
   // player cards
   for(const p of [0,1]){
     $('nm'+p).textContent=M.names[p];$('sc'+p).textContent=M.wins[p];

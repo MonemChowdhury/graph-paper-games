@@ -124,6 +124,7 @@ body{
 .dab .box.p1{fill:color-mix(in srgb,var(--p1) 22%,transparent)}
 .dab .box{fill:transparent}
 .dab .boxmark{font-family:var(--hand);font-weight:700;font-size:30px;text-anchor:middle;dominant-baseline:central}
+.dab .boxmark.two{font-size:24px}
 .dab .dotpt{fill:var(--ink)}
 @keyframes pop{from{opacity:.2}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.fresh .ink,.dab .edge.fresh{stroke-dashoffset:0}.dab .box.fresh{clip-path:none}.dab .boxmark.fresh{opacity:1}}
@@ -151,3 +152,12 @@ body{
 .choice.on{border-color:var(--p0);box-shadow:inset 0 0 0 1.5px var(--p0)}
 .choice:disabled{opacity:.45;cursor:default}
 .choice:focus-visible{outline:2px dashed var(--p0);outline-offset:2px}
+
+/* Player names */
+.names{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.name-in .dot{flex:none}
+.name-in{display:flex;align-items:center;gap:8px;border:1.5px solid var(--ink);border-radius:6px;padding:0 10px;background:var(--paper)}
+.name-in:focus-within{outline:2px dashed var(--p0);outline-offset:2px}
+.name-in input{font:inherit;font-weight:600;color:var(--ink);background:transparent;border:0;outline:0;padding:12px 0;width:100%;min-width:0;-webkit-user-select:text;user-select:text}
+.name-in input::placeholder{color:var(--muted);font-weight:400}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
