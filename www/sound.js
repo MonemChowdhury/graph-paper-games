@@ -12,7 +12,7 @@ const DATA='data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYwLjE2LjEwM
 const KEY='gpg-sound';
 let on=true;
 try{on=localStorage.getItem(KEY)!=='off'}catch(e){}
-let ctx=null,buf=null,drops=null,loading=null;
+let ctx=null,bus=null,buf=null,drops=null,loading=null;
 
 // decode an embedded sound directly (no fetch, so nothing can block it)
 function decode(uri){
@@ -25,6 +25,9 @@ function init(){
   const AC=window.AudioContext||window.webkitAudioContext;
   if(!AC)return false;
   ctx=new AC();
+  // every sound goes through here: a bit quieter, and the bright top end softened for a warmer tone
+  const warm=ctx.createBiquadFilter();warm.type='lowpass';warm.frequency.value=3800;warm.Q.value=.5;
+  bus=ctx.createGain();bus.gain.value=.7;bus.connect(warm);warm.connect(ctx.destination);
   loading=Promise.all([decode(DATA).then(b=>{buf=b}).catch(()=>{}),decode(DROP).then(b=>{drops=b}).catch(()=>{})]);
   return true;
 }
@@ -36,23 +39,23 @@ function unlock(){if(init()&&ctx.state==='suspended')ctx.resume()}
 function play(b,seg,at,rate,vol){
   if(!b)return;
   const src=ctx.createBufferSource();src.buffer=b;
-  src.playbackRate.value=rate*(.94+Math.random()*.12);   // tiny pressure/speed variation
+  src.playbackRate.value=rate*(.9+Math.random()*.08);    // slightly lower, with tiny variation
   const g=ctx.createGain();g.gain.value=vol*(.85+Math.random()*.15);
-  src.connect(g);g.connect(ctx.destination);
+  src.connect(g);g.connect(bus);
   src.start(at,seg[0],seg[1]/rate);
 }
-/* A soft marimba-like note made in code: a warm tone plus a faint wooden overtone, quick fade. */
-function note(freq,at){
-  const out=ctx.createGain();out.connect(ctx.destination);
-  out.gain.setValueAtTime(0,at);
-  out.gain.linearRampToValueAtTime(.2,at+.006);
-  out.gain.exponentialRampToValueAtTime(.001,at+.45);
-  [[1,1],[3.9,.12]].forEach(([m,v])=>{
-    const o=ctx.createOscillator(),g=ctx.createGain();
-    o.type='sine';o.frequency.value=freq*m;g.gain.value=v;
-    if(m>1){g.gain.setValueAtTime(v,at);g.gain.exponentialRampToValueAtTime(.001,at+.08)}
-    o.connect(g);g.connect(out);o.start(at);o.stop(at+.5);
-  });
+/* A soft paper pop made in code: a gentle low thump with a short papery puff on top. */
+function pop(at,lift){
+  const th=ctx.createOscillator(),tg=ctx.createGain();
+  th.type='sine';
+  th.frequency.setValueAtTime(190*lift,at);th.frequency.exponentialRampToValueAtTime(95*lift,at+.06);
+  tg.gain.setValueAtTime(0,at);tg.gain.linearRampToValueAtTime(.55,at+.004);tg.gain.exponentialRampToValueAtTime(.001,at+.12);
+  th.connect(tg);tg.connect(bus);th.start(at);th.stop(at+.14);
+  const n=Math.floor(ctx.sampleRate*.05),nb=ctx.createBuffer(1,n,ctx.sampleRate),d=nb.getChannelData(0);
+  for(let k=0;k<n;k++)d[k]=(Math.random()*2-1)*Math.pow(1-k/n,3);
+  const src=ctx.createBufferSource(),bp=ctx.createBiquadFilter(),ng=ctx.createGain();
+  src.buffer=nb;bp.type='bandpass';bp.frequency.value=1100*lift;bp.Q.value=.8;ng.gain.value=.35;
+  src.connect(bp);bp.connect(ng);ng.connect(bus);src.start(at);
 }
 const last={};
 function one(name,list,b,at,rate=1,vol=1){
@@ -75,9 +78,9 @@ function scratch(style,info){
     }else{
       // Dots & Boxes has many moves, so its sounds stay soft and calm
       one('s',SHORT,buf,t,1,.55);                                     // line: one light pencil stroke
-      const n=Math.min(+info||0,2);                                   // box claimed: soft wooden note(s)
-      if(n>=1)note(659,t+.22);                                        // one box: E
-      if(n>=2)note(988,t+.36);                                        // two boxes: E then B, rising
+      const n=Math.min(+info||0,2);                                   // box claimed: soft paper pop
+      if(n>=1)pop(t+.22,1);
+      if(n>=2)pop(t+.36,1.2);                                         // two boxes: a second, slightly higher pop
     }
   };
   (buf&&drops)?go():loading&&loading.then(go);
