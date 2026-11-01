@@ -29,9 +29,9 @@ try{
 
 /* ---------- home ---------- */
 const ICONS={
-  ttt:`<svg viewBox="0 0 80 80"><g stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"><path d="M28 8V72M52 8V72M8 28H72M8 52H72"/></g><path d="M12 12L24 24M24 12L12 24" stroke="var(--p0)" stroke-width="4" stroke-linecap="round"/><circle cx="40" cy="40" r="7" fill="none" stroke="var(--p1)" stroke-width="4"/><path d="M56 56L68 68M68 56L56 68" stroke="var(--p0)" stroke-width="4" stroke-linecap="round"/></svg>`,
-  c4:`<svg viewBox="0 0 80 80"><rect x="6" y="14" width="68" height="58" rx="6" fill="none" stroke="var(--ink)" stroke-width="2.5"/>${[0,1,2,3].map(r=>[0,1,2,3].map(c=>{const f=(r===3&&c<3)?'var(--p0)':(r===2&&c===1)||(r===3&&c===3)?'var(--p1)':(r===2&&c===2)?'var(--p0)':'none';return`<circle cx="${18+c*15}" cy="${25+r*14}" r="5.5" fill="${f}" stroke="var(--line)" stroke-width="1.5"/>`}).join('')).join('')}</svg>`,
-  dab:`<svg viewBox="0 0 80 80"><rect x="16" y="16" width="24" height="24" fill="color-mix(in srgb,var(--p0) 25%,transparent)"/><path d="M16 16H40V40H16Z" fill="none" stroke="var(--p0)" stroke-width="4" stroke-linecap="round"/><path d="M40 40H64M40 40V64" stroke="var(--p1)" stroke-width="4" stroke-linecap="round"/>${[16,40,64].map(y=>[16,40,64].map(x=>`<circle cx="${x}" cy="${y}" r="4" fill="var(--ink)"/>`).join('')).join('')}</svg>`
+  ttt:`<svg viewBox="0 0 80 80"><g stroke-linecap="round"><g stroke="var(--p0dk)" stroke-width="9" transform="translate(0 3)"><path d="M16 16L34 34M34 16L16 34M46 46L64 64M64 46L46 64"/></g><g stroke="var(--p0)" stroke-width="9"><path d="M16 16L34 34M34 16L16 34M46 46L64 64M64 46L46 64"/></g></g><circle cx="57" cy="26" r="10" fill="none" stroke="var(--p1dk)" stroke-width="8" transform="translate(0 3)"/><circle cx="57" cy="23" r="10" fill="none" stroke="var(--p1)" stroke-width="8"/><circle cx="23" cy="60" r="10" fill="none" stroke="var(--p1dk)" stroke-width="8" transform="translate(0 3)"/><circle cx="23" cy="57" r="10" fill="none" stroke="var(--p1)" stroke-width="8"/></svg>`,
+  c4:`<svg viewBox="0 0 80 80"><rect x="6" y="10" width="68" height="62" rx="12" fill="#f6b800"/><rect x="6" y="6" width="68" height="62" rx="12" fill="#ffd23f"/>${[0,1,2].map(r=>[0,1,2].map(c=>{const f=r===2?(c===1?'var(--p1)':'var(--p0)'):(r===1&&c===1)?'var(--p0)':(r===1&&c===2)?'var(--p1)':'#fff1c4';return`<circle cx="${21+c*19}" cy="${20+r*19}" r="7.5" fill="${f}"/><circle cx="${18.5+c*19}" cy="${17.5+r*19}" r="2" fill="#fff" fill-opacity="${f==='#fff1c4'?0:.7}"/>`}).join('')).join('')}</svg>`,
+  dab:`<svg viewBox="0 0 80 80"><rect x="18" y="18" width="20" height="20" rx="3" fill="color-mix(in srgb,var(--p1) 30%,#fff)"/><path d="M16 16H40V40H16Z" fill="none" stroke="var(--p1)" stroke-width="5" stroke-linecap="round"/><path d="M40 40H64M40 40V64" stroke="var(--p0)" stroke-width="5" stroke-linecap="round"/>${[16,40,64].map(y=>[16,40,64].map(x=>`<circle cx="${x}" cy="${y}" r="5" fill="#2b2442"/>`).join('')).join('')}</svg>`
 };
 const BLURB={ttt:'Three in a row. Quick rounds.',c4:'Drop discs, line up four.',dab:'Draw lines, claim boxes.'};
 $('gameCards').innerHTML=Object.values(GAMES).map(g=>
@@ -109,9 +109,25 @@ function moved(){
   try{window.Sound&&Sound.scratch(g,info)}catch(e){}
   buzz();
 }
+/* a short burst of confetti when a person wins */
+function confetti(){
+  if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const c=document.createElement('canvas');c.className='confetti';document.body.appendChild(c);
+  const d=window.devicePixelRatio||1,W=c.width=innerWidth*d,H=c.height=innerHeight*d,x=c.getContext('2d');
+  const cols=['#2f6bff','#ff4d5e','#ffd23f','#2fd17a','#ffffff'];
+  const bits=Array.from({length:110},()=>({x:W/2,y:H*.35,vx:(Math.random()-.5)*16*d,vy:(-Math.random()*16-4)*d,
+    r:Math.random()*Math.PI,vr:(Math.random()-.5)*.4,w:(6+Math.random()*6)*d,h:(10+Math.random()*8)*d,c:cols[Math.floor(Math.random()*cols.length)]}));
+  let t=0;(function step(){
+    x.clearRect(0,0,W,H);t++;
+    for(const b of bits){b.vy+=.45*d;b.vx*=.99;b.x+=b.vx;b.y+=b.vy;b.r+=b.vr;
+      x.save();x.translate(b.x,b.y);x.rotate(b.r);x.fillStyle=b.c;x.fillRect(-b.w/2,-b.h/2,b.w,b.h);x.restore()}
+    if(t<110)requestAnimationFrame(step);else c.remove();
+  })();
+}
 function update(){
   const {game,s}=M,res=game.result(s);
-  if(res&&!M.counted){M.counted=true;if(res.winner==='D')M.wins[2]++;else M.wins[res.winner]++}
+  let cheer=false;
+  if(res&&!M.counted){M.counted=true;if(res.winner==='D')M.wins[2]++;else{M.wins[res.winner]++;cheer=M.mode!=='cpu'&&M.mode!=='online'||res.winner===M.me}}
   game.render($('board'),s,{canPlay:canPlay(),onMove,marks:M.marks});
   // player cards
   for(const p of [0,1]){
@@ -131,7 +147,8 @@ function update(){
   }else{
     st.textContent=s.turn===M.me?'Your turn':(M.mode==='cpu'?'Thinking…':"Friend's turn");
   }
-  st.style.color=res?'':`var(--p${s.turn})`;
+  st.classList.toggle('won',!!(res&&res.winner!=='D'));
+  if(cheer)confetti();
   // round info
   const sc=game.score(s);
   $('roundInfo').textContent=(sc?`Boxes: ${M.names[0]} ${sc[0]} · ${M.names[1]} ${sc[1]}  ·  `:'')+`Round ${M.round}`+(M.wins[2]?` · Draws ${M.wins[2]}`:'');

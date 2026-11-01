@@ -44,10 +44,12 @@ const TicTacToe={
   },
   render(el,s,ctx){
     const r=tttJudge(s.b),win=r?r.cells:[];
+    // chunky 3D pieces: a dark copy underneath gives depth, a gradient on top, then a shine
     const mark=(p,fresh)=>p===0
-      ?`<svg viewBox="0 0 100 100" class="${fresh?'fresh':''}"><path class="ink" d="M18 20 L82 80" style="--len:92;stroke:var(--p0)"/><path class="ink p2" d="M82 18 L20 82" style="--len:92;stroke:var(--p0)"/></svg>`
-      :`<svg viewBox="0 0 100 100" class="${fresh?'fresh':''}"><circle class="ink" cx="50" cy="50" r="33" transform="rotate(-80 50 50)" style="--len:210;stroke:var(--p1)"/></svg>`;
-    el.innerHTML=`<div class="ttt"><svg class="grid" viewBox="0 0 300 300" aria-hidden="true"><g stroke="var(--ink)" stroke-width="4" stroke-linecap="round" fill="none"><path d="M101 8 Q99 150 102 292"/><path d="M199 10 Q202 150 198 290"/><path d="M8 100 Q150 98 292 102"/><path d="M10 199 Q150 202 290 198"/></g></svg>`+
+      ?`<svg viewBox="0 0 100 100" class="piece${fresh?' fresh':''}"><g stroke-width="21" stroke-linecap="round"><g stroke="var(--p0dk)" transform="translate(0 6)"><path d="M22 22L78 78"/><path d="M78 22L22 78"/></g><g stroke="url(#gpX)"><path d="M22 22L78 78"/><path d="M78 22L22 78"/></g></g><path d="M24 20L34 30M76 20L66 30" stroke="#fff" stroke-opacity=".6" stroke-width="5" stroke-linecap="round"/></svg>`
+      :`<svg viewBox="0 0 100 100" class="piece${fresh?' fresh':''}"><circle cx="50" cy="56" r="30" fill="none" stroke="var(--p1dk)" stroke-width="20"/><circle cx="50" cy="50" r="30" fill="none" stroke="url(#gpO)" stroke-width="20"/><path d="M30 34A26 26 0 0 1 50 24" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="5" stroke-linecap="round"/></svg>`;
+    const defs=`<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="gpX" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--p0hi)"/><stop offset=".55" style="stop-color:var(--p0)"/></linearGradient><linearGradient id="gpO" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--p1hi)"/><stop offset=".55" style="stop-color:var(--p1)"/></linearGradient></defs></svg>`;
+    el.innerHTML=`<div class="ttt">${defs}`+
       s.b.map((v,i)=>`<button class="cell${win.includes(i)?' win':''}" data-m="${i}" ${(!ctx.canPlay||v>=0)?'disabled':''} aria-label="Square ${i+1}${v>=0?(v?' O':' X'):' empty'}">${v>=0?mark(v,i===s.last):''}</button>`).join('')+`</div>`;
     el.querySelectorAll('.cell').forEach(b=>b.onclick=()=>ctx.onMove(+b.dataset.m));
   }
@@ -178,7 +180,7 @@ const DotsAndBoxes={
   },
   render(el,s,ctx){
     const G=70,M=22,W=M*2+G*N;
-    let h=`<svg class="dab" viewBox="0 0 ${W} ${W}" role="group" aria-label="Dots and boxes board">`;
+    let h=`<svg class="dab" viewBox="0 0 ${W} ${W}" role="group" aria-label="Dots and boxes board"><defs><radialGradient id="gpBead" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#8a83a3"/><stop offset=".5" stop-color="#3a3253"/><stop offset="1" stop-color="#1c1630"/></radialGradient></defs>`;
     const fb=DotsAndBoxes.freshBoxes(s),mk=ctx.marks||['B','R'];
     s.box.forEach((v,bx)=>{const r=Math.floor(bx/N),c=bx%N,x=M+c*G,y=M+r*G,f=fb.includes(bx)?' fresh':'';
       h+=`<rect class="box${v>=0?' '+P[v]:''}${f}" x="${x+4}" y="${y+4}" width="${G-8}" height="${G-8}" rx="4"/>`;
@@ -188,7 +190,7 @@ const DotsAndBoxes={
       if(can)h+=`<line class="hit" data-m="${i}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" tabindex="0" role="button" aria-label="Line ${i+1}"/>`};
     for(let r=0;r<=N;r++)for(let c=0;c<N;c++)line(hIdx(r,c),M+c*G+8,M+r*G,M+(c+1)*G-8,M+r*G);
     for(let r=0;r<N;r++)for(let c=0;c<=N;c++)line(vIdx(r,c),M+c*G,M+r*G+8,M+c*G,M+(r+1)*G-8);
-    for(let r=0;r<=N;r++)for(let c=0;c<=N;c++)h+=`<circle class="dotpt" cx="${M+c*G}" cy="${M+r*G}" r="5"/>`;
+    for(let r=0;r<=N;r++)for(let c=0;c<=N;c++)h+=`<circle class="dotpt" cx="${M+c*G}" cy="${M+r*G}" r="7"/>`;
     el.innerHTML=h+'</svg>';
     el.querySelectorAll('.hit').forEach(l=>{
       l.addEventListener('click',()=>ctx.onMove(+l.dataset.m));
